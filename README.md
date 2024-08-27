@@ -15,5 +15,5 @@
 </p>
 
 <p align="center">
-    <img src="https://img.icons8.com/ios-filled/50/000000/lock-shield.png" alt="Lock Shield style="width: 80px; height: auto;"/>
+    <img src="https://img.icons8.com/ios-filled/50/000000/lock-shield.png" alt="Lock Shield" style="width: 80px; height: auto;"/>
 </p>
