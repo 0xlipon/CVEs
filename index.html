@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced CVE Search</title>
+    <!-- Bootstrap 5 Stylesheet -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.0.1/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #000;
+            color: #00ff00;
+        }
+        h1, h2 {
+            color: #00ff00;
+            text-align: center;
+        }
+        .search-container {
+            background-color: #333;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 20px rgba(0, 255, 0, 0.2);
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+	    margin-top: 30px;
+        }
+	h5 {
+            color: #00ff00;
+            text-align: center;
+            font-size: 16px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        h5 a {
+            color: #1e90ff;
+            text-decoration: none;
+        }
+        h5 a:hover {
+            text-decoration: underline;
+        }
+        .search-container h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #00ff00;
+        }
+        .form-control {
+            height: 45px;
+            font-size: 16px;
+            border-radius: 5px;
+            background-color: #000;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+        }
+        .btn-search {
+            background-color: #00ff00;
+            color: #000;
+            height: 45px;
+            font-size: 16px;
+            width: 100%;
+            border-radius: 5px;
+            border: none;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        .btn-search:hover {
+            background-color: #004400;
+            color: #00ff00;
+        }
+        .results-container {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .result-item {
+            background-color: #1a1a1a;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            border: 1px solid #00ff00;
+        }
+        .result-item a {
+            color: #1e90ff;
+            text-decoration: none;
+        }
+        .result-item a:hover {
+            text-decoration: underline;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.4em;
+        }
+        .cve-btn-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .cve-btn {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #00ff00;
+            color: #000;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .cve-btn:hover {
+            background-color: #004400;
+            color: #00ff00;
+        }
+        .cve-emoji {
+            font-size: 48px;
+            color: #00ff00;
+            text-shadow: 2px 2px 4px #000;
+            display: block;
+            margin: 40px auto 20px auto; /* Center the emoji and provide space */
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <h1>Advanced CVE Search</h1>
+	<h5 align="center">Created by <a href="https://github.com/0xlipon" target="_blank">@0xlipon</a></h5>
+        <input type="text" class="form-control" id="search-input" placeholder="CVE-2017-0144" oninput="searchCVEs()">
+        <button class="btn-search" onclick="searchCVEs()">Search</button>
+        <div id="loading" style="display: none; text-align: center;">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p>Loading data...</p>
+        </div>
+        <div class="results-container" id="results-container"></div>
+    </div>
+    
+    <!-- Additional CVE Search Links -->
+    <div class="cve-btn-container">
+        <a href="https://cve.mitre.org/" class="cve-btn" target="_blank">MITRE CVE</a>
+        <a href="https://nvd.nist.gov/vuln/search" class="cve-btn" target="_blank">NVD CVE</a>
+        <a href="https://www.cvedetails.com/" class="cve-btn" target="_blank">CVE Details</a>
+        <a href="https://cvebase.com/" class="cve-btn" target="_blank">CVE Base</a>
+        <a href="https://www.rapid7.com/db/vulnerabilities" class="cve-btn" target="_blank">Rapid7 CVE</a>
+        <a href="https://www.andrewmohawk.com/cve_summary/" class="cve-btn" target="_blank">AndrewMohawk</a>
+        <a href="https://github.com/trickest/cve/tree/main" class="cve-btn" target="_blank">Trickest</a>
+        <a href="https://github.com/RhinoSecurityLabs/CVEs/tree/master" class="cve-btn" target="_blank">RhinoSecurity</a>
+    </div>
+
+    <div class="cve-emoji">💀🔍</div>
+
+    <script>
+        let githubData = [];
+        let cveSummaryData = [];
+
+        // Fetch data from the GitHub file
+        fetch('https://raw.githubusercontent.com/trickest/cve/main/github.txt')
+            .then(response => response.text())
+            .then(data => {
+                githubData = data.split('\n').map(line => {
+                    const [cve, url] = line.split(' - ');
+                    return { cve, url };
+                });
+            });
+
+        // Fetch data from the CVE summary file
+        fetch('https://www.andrewmohawk.com/cve_summary/CVE_list.json')
+            .then(response => response.json())
+            .then(data => {
+                cveSummaryData = data.map(entry => ({
+                    year: entry[0],
+                    cve: entry[1],
+                    description: entry[2],
+                    url: entry[3],
+                    references: entry[4]
+                }));
+            });
+
+        function searchCVEs() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const resultsContainer = document.getElementById('results-container');
+            const loading = document.getElementById('loading');
+
+            resultsContainer.innerHTML = '';
+            loading.style.display = 'block';
+
+            if (query) {
+                let results = [];
+
+                // Search in githubData
+                results = results.concat(githubData.filter(item => item.cve.toLowerCase().includes(query)));
+
+                // Search in cveSummaryData
+                results = results.concat(cveSummaryData.filter(item => 
+                    item.cve.toLowerCase().includes(query) || 
+                    item.description.toLowerCase().includes(query)
+                ));
+
+                // Display results
+                results.forEach(result => {
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    resultItem.innerHTML = `<a href="${result.url}" target="_blank">${result.cve || result.cve} ${result.description || ''}</a>`;
+                    resultsContainer.appendChild(resultItem);
+                });
+            }
+
+            loading.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
