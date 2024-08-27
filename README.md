@@ -8,4 +8,4 @@
     </a>
 </p>
 
-<p align="center">Elevate your vulnerability assessments with our comprehensive CVE search tool, designed for penetration testers and security professionals.</p>
+<p align="center">Boost your security with our cutting-edge CVE search tool for pros.</p>
